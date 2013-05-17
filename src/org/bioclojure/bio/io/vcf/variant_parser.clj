@@ -51,7 +51,8 @@
         format-parser (build-parser (get headers "FORMAT"))]
     (fn [s]
       (let [m (zipmap (:columns headers) (str/split s #"\t"))
-            f (str/split (m "FORMAT") #":")]
+            f (when-let [format-field-definition (m "FORMAT")]
+                (str/split format-field-definition #":"))]
         {:chr    (m "CHROM")
          :pos    (value dec-lit (m "POS"))
          :id     (value (<|> missing (delimited-str \,)) (m "ID"))
@@ -62,3 +63,4 @@
          :info   (parse-info info-parser (m "INFO"))
          :gtype  (zipmap sample-ids
                          (map #(parse-format format-parser f (m %)) sample-ids))}))))
+
